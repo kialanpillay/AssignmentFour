@@ -1,6 +1,5 @@
 #include <iostream>
 #include "clusterer.h"
-#include "boost/filesystem.hpp" 
 
 using namespace std;
 
@@ -10,29 +9,35 @@ int main(int argc, char* argv[])
     string dataset = argv[1];
     int bin = 10;
     int clusters = 10;
-
+    bool color = false;
     if(argc < 2){
         cout << "Incorrect number of arguments!" << endl;
         exit(1);
     }
 
-    for(int i = 2; i < argc; i+=2){
+    for(int i = 2; i < argc ; i+=2){
         string flag = argv[i];
-        string arg = argv[i+1];
-        if(flag.find("-o") != std::string::npos){
-            output = arg;
+        if(flag!="-color"){
+            string arg = argv[i+1];
+            if(flag.find("-o") != std::string::npos){
+                output = arg;
+            }
+            if(flag.find("-k") != std::string::npos){
+                clusters = stoi(arg);
+            }
+            if(flag.find("-b") != std::string::npos){
+                bin = stoi(arg);
+            }
         }
-        if(flag.find("-k") != std::string::npos){
-            clusters = stoi(arg);
-        }
-        if(flag.find("-b") != std::string::npos){
-            bin = stoi(arg);
+        else{
+            color = true;
         }
     }
 
-    PLLKIA010::Clusterer c(dataset, output, bin, clusters);
+    PLLKIA010::KMeansClusterer c(dataset, output, bin, clusters, color);
     cout << "K-Means Image Clustering" << std::endl;
     cout << "================================================" << std::endl;
     c.generateFeatures();
+    c.cluster();
     return 0;
 }
