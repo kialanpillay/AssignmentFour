@@ -52,7 +52,6 @@ void KMeansClusterer::generateFeatures(){
     for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
         
         const auto filename = file.path().filename().string();
-        //std::cout << c << filename << std::endl;
         std::ifstream in(dataset+"/"+filename,std::ios::binary);
         std::string header;
         in >> header;
@@ -86,14 +85,7 @@ void KMeansClusterer::generateFeatures(){
         };
         features[i] = std::move(hist);
         
-    };/*
-    for (int i = 0; i < (32*32); i++){
-
-        if(i%32 ==0){
-            std::cout << std::endl;
-        }
-        printf("%-4d",images[0][i]);
-    };*/
+    };
 
     std::cout << std::endl;
     for (int i = 0; i < images.size(); i++){
@@ -213,8 +205,6 @@ void KMeansClusterer::cluster(){
                 else{
                     centroids[i] = sumPoints/double(clusters[i].size());
                 }
-                
-                //std::cout << clusters[i].size() << " C SIZE : CEN: "  << centroids[i] << " SP " <<  sumPoints << std::endl;
             
             };
 
@@ -247,9 +237,6 @@ void KMeansClusterer::cluster(){
             classification.resize(k);
             clusters.clear();
             clusters.resize(k);
-            for(int i = 0; i < k; i++){
-                //std::cout << means[i] << " " << centroids[i] << std::endl;
-            };
             means = centroids;
             
             for(int i = 0; i < features.size(); i++){
