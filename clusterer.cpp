@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include "clusterer.h"
 #include <filesystem>
+#include <stdio.h>
 #include <math.h>
 
 using namespace PLLKIA010;
@@ -34,6 +35,15 @@ std::vector<std::vector<int>> &  KMeansClusterer::getFeatures(){
     return features;
 }
 
+void KMeansClusterer::generate(){
+    if(color){
+        generateRGBFeatures();
+    }
+    else{
+        generateFeatures();
+    }
+}
+
 void KMeansClusterer::generateFeatures(){
 
     std::vector<int*> images(getFiles());
@@ -42,7 +52,7 @@ void KMeansClusterer::generateFeatures(){
     for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
         
         const auto filename = file.path().filename().string();
-        std::cout << c << filename << std::endl;
+        //std::cout << c << filename << std::endl;
         std::ifstream in(dataset+"/"+filename,std::ios::binary);
         std::string header;
         in >> header;
@@ -62,7 +72,8 @@ void KMeansClusterer::generateFeatures(){
         ++c;
      
     }
-    int entries = ceil(double(rgb)/double(bin));
+    int entries = ceil(double(rgb+1)/double(bin));
+    std::cout << entries << std::endl;
 
     for (int i = 0; i < images.size(); i++){
         std::vector<int>hist(0);
@@ -75,7 +86,16 @@ void KMeansClusterer::generateFeatures(){
         };
         features[i] = std::move(hist);
         
-    };
+    };/*
+    for (int i = 0; i < (32*32); i++){
+
+        if(i%32 ==0){
+            std::cout << std::endl;
+        }
+        printf("%-4d",images[0][i]);
+    };*/
+
+    std::cout << std::endl;
     for (int i = 0; i < images.size(); i++){
         delete [] images[i];
     };
@@ -86,7 +106,7 @@ void KMeansClusterer::generateFeatures(){
 
 void KMeansClusterer::generateRGBFeatures(){
 
-    std::vector<int*> images(getFiles());
+    std::vector<int*> images(getFiles()*3);
     int width, height, rgb;
     int c = 0;
     for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
@@ -98,27 +118,28 @@ void KMeansClusterer::generateRGBFeatures(){
         in >> header;
         in >> width >> height >> rgb;
 
-        images[c] = new int[height * width * 3];
-
+        images[c] = new int[height * width];
+        images[c+1] = new int[height * width];
+        images[c+2] = new int[height * width];
         unsigned char pixels[3];  
-        for (int j = 0; j < width * height * 3; j+=3) { 
+        for (int j = 0; j < width * height; j++) { 
             in.read((char *)pixels, 3); 
             float r = pixels[0]; 
             float g = pixels[1]; 
             float b = pixels[2]; 
             images[c][j] = r;
-            images[c][j+1] = g;
-            images[c][j+2] = b;
+            images[c+1][j] = g;
+            images[c+2][j] = b;
         } 
         in.close();
-        ++c;
+        c+=3;
      
     }
-    int entries = rgb/bin;
     
-    for (int i = 0; i < images.size() * 3; i++){
-        std::vector<int>hist(0);
-        hist.resize(entries);
+    int entries = ceil(double(rgb+1)/double(bin));
+    
+    for (int i = 0; i < images.size(); i++){
+        std::vector<int>hist(entries);
         for (int j = 0; j < width * height; j++){
             int b = floor(images[i][j]/bin);   
             hist[b]++;
@@ -149,6 +170,64 @@ bool KMeansClusterer::convergence(const std::vector<double> &means, const std::v
 void KMeansClusterer::cluster(){
 
     if(color){
+        std::vector<double>means(k); 
+        std::vector<double>centroids(k); //updated means
+        std::vector<std::vector<double>>clusters(k); 
+        classification.resize(k);
+        srand((unsigned) time(0));
+        for(int i = 0; i < k; i++){
+            
+            int r = (rand() % getFiles()*3 + 1)-1;
+            
+            means[i] = calcRGBMeanIntensity(calcMeanIntensity(features[r]),calcMeanIntensity(features[r+1]),calcMeanIntensity(features[r+2]));
+            //means[i] = i*10 + 110;
+        };
+        centroids = means;
+        do{
+            classification.clear();
+            classification.resize(k);
+            clusters.clear();
+            clusters.resize(k);
+            means = centroids;
+            
+            for(int i = 0; i < features.size(); i+=3){
+
+                int cluster = assignRGBCluster(features[i],features[i+1],features[i+2], means);
+                int rgbMean = calcRGBMeanIntensity(calcMeanIntensity(features[i]),calcMeanIntensity(features[i+1]),calcMeanIntensity(features[i+2]));
+                    std::cout << rgbMean << std::endl;
+                clusters[cluster].push_back(rgbMean);
+                classification[cluster] += (std::to_string(i/3) + " ");
+            };
+            
+            for(int i = 0; i < centroids.size(); i++){
+
+
+                double sumPoints = 0;
+                for(int k = 0; k < clusters[i].size(); k++){
+                    sumPoints += clusters[i][k];
+            
+                };
+                if(clusters[i].size() == 0){
+                    centroids[i] = 0;
+                }
+                else{
+                    centroids[i] = sumPoints/double(clusters[i].size());
+                }
+                
+                //std::cout << clusters[i].size() << " C SIZE : CEN: "  << centroids[i] << " SP " <<  sumPoints << std::endl;
+            
+            };
+
+            
+        }
+        while(!convergence(means, centroids));
+
+        std::cout << "Classification" << std::endl;
+        for(int i = 0; i < classification.size(); i++){
+            std::cout << "Cluster " << i << " : " << classification[i] << std::endl;
+        };
+
+        scoreClusterer();
 
     }
     else{
@@ -159,7 +238,7 @@ void KMeansClusterer::cluster(){
         srand((unsigned) time(0));
         for(int i = 0; i < k; i++){
             
-            int r = (rand() % getFiles() + 1);
+            int r = (rand() % getFiles() + 1) - 1;
             means[i] = calcMeanIntensity(features[r]);
         };
         centroids = means;
@@ -169,13 +248,13 @@ void KMeansClusterer::cluster(){
             clusters.clear();
             clusters.resize(k);
             for(int i = 0; i < k; i++){
-                std::cout << means[i] << " " << centroids[i] << std::endl;
+                //std::cout << means[i] << " " << centroids[i] << std::endl;
             };
             means = centroids;
             
             for(int i = 0; i < features.size(); i++){
 
-                int cluster = calcCluster(features[i], means);
+                int cluster = assignCluster(features[i], means);
                 clusters[cluster].push_back(calcMeanIntensity(features[i]));
                 classification[cluster] += (std::to_string(i) + " ");
             };
@@ -195,7 +274,7 @@ void KMeansClusterer::cluster(){
                     centroids[i] = sumPoints/double(clusters[i].size());
                 }
                 
-                std::cout << clusters[i].size() << " C SIZE : CEN: "  << centroids[i] << " SP " <<  sumPoints << std::endl;
+                //std::cout << clusters[i].size() << " C SIZE : CEN: "  << centroids[i] << " SP " <<  sumPoints << std::endl;
                 
 
             };
@@ -208,24 +287,55 @@ void KMeansClusterer::cluster(){
         for(int i = 0; i < classification.size(); i++){
             std::cout << "Cluster " << i << " : " << classification[i] << std::endl;
         };
-        
-        
-        
 
- 
-
+        scoreClusterer();
 
     }
     
 }
 
-int KMeansClusterer::calcCluster(const std::vector<int> &feature, const std::vector<double> &means){
+int label(std::string name)
+{
+    if (name.find("zero") != std::string::npos) return 0;
+    if (name.find("one") != std::string::npos) return 1;
+    if (name.find("two") != std::string::npos) return 2;
+    if (name.find("three") != std::string::npos) return 3;
+    if (name.find("four") != std::string::npos) return 4;
+    if (name.find("five") != std::string::npos) return 5;
+    if (name.find("six") != std::string::npos) return 6;
+    if (name.find("seven") != std::string::npos) return 7;
+    if (name.find("eight") != std::string::npos) return 8;
+    if (name.find("nine") != std::string::npos) return 9;
+    
+    return 0;
+}
+
+double KMeansClusterer::scoreClusterer(){
+    int c = 0;
+    std::vector<std::string>labels(10); 
+    for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
+
+        const auto filename = file.path().filename().string();
+        labels[label(filename)] += (std::to_string(c) + " ");
+        ++c;
+    }
+    std::cout << "Labels" << std::endl;
+    for(int i = 0; i < labels.size(); i++){
+            std::cout << "Cluster " << i << " : " << labels[i] << std::endl;
+    };
+    return 0;
+ 
+}
+
+
+
+int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::vector<double> &means){
 
     int cluster = 0;
     double distance = 0;
     double min = 1000;
     for(int i = 0; i < means.size(); i++){
-            distance = calcEuclideanDistance(feature, means[i]);
+            distance = calcEuclideanDistance(calcMeanIntensity(feature), means[i]);
             if(distance <= min){
                 cluster = i;
                 min = distance;
@@ -235,18 +345,39 @@ int KMeansClusterer::calcCluster(const std::vector<int> &feature, const std::vec
  
 }
 
-double KMeansClusterer::calcEuclideanDistance(const std::vector<int> &feature, int mean){
-    int featureIntensity = calcMeanIntensity(feature);
+int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vector<int> &g, const std::vector<int> &b, const std::vector<double> &means){
+
+    int cluster = 0;
+    double distance = 0;
+    double min = 1000;
+    for(int i = 0; i < means.size(); i++){
+            distance = calcEuclideanDistance(calcRGBMeanIntensity(calcMeanIntensity(r),calcMeanIntensity(g),calcMeanIntensity(b)), means[i]);
+            if(distance <= min){
+                cluster = i;
+                min = distance;
+            }
+    };
+    return cluster;
+ 
+}
+
+double KMeansClusterer::calcEuclideanDistance(const int featureIntensity, int mean){
     return abs(featureIntensity - mean);
 }
 
 double KMeansClusterer::calcMeanIntensity(const std::vector<int>& feature){
 
     int sum = 0;
-    for(int i = 0; i < (256/bin); i++){
+    for(int i = 0; i < feature.size(); i++){
             sum += feature[i] * i;
     };
-    return sum/bin;
+    return sum/feature.size();
+ 
+}
+
+double KMeansClusterer::calcRGBMeanIntensity(const double r, const double g, const double b){
+
+    return sqrt(r*r + g*g + b*b);
  
 }
 

@@ -31,13 +31,14 @@ int main(int argc, char* argv[])
         }
         else{
             color = true;
+            break;
         }
     }
 
     PLLKIA010::KMeansClusterer c(dataset, output, bin, clusters, color);
     cout << "K-Means Image Clustering" << std::endl;
     cout << "================================================" << std::endl;
-    c.generateFeatures();
+    c.generate();
     c.cluster();
     return 0;
 }
