@@ -159,7 +159,7 @@ bool KMeansClusterer::convergence(const std::vector<double> &means, const std::v
     return convergence;
 }
 
-void KMeansClusterer::cluster(){
+std::string KMeansClusterer::cluster(){
 
     if(color){
         std::vector<double>means(k); 
@@ -186,7 +186,6 @@ void KMeansClusterer::cluster(){
 
                 int cluster = assignRGBCluster(features[i],features[i+1],features[i+2], means);
                 int rgbMean = calcRGBMeanIntensity(calcMeanIntensity(features[i]),calcMeanIntensity(features[i+1]),calcMeanIntensity(features[i+2]));
-                    std::cout << rgbMean << std::endl;
                 clusters[cluster].push_back(rgbMean);
                 classification[cluster] += (std::to_string(i/3) + " ");
             };
@@ -212,12 +211,14 @@ void KMeansClusterer::cluster(){
         }
         while(!convergence(means, centroids));
 
-        std::cout << "Classification" << std::endl;
+        std::string results;
+        results = "Classification\n";
         for(int i = 0; i < classification.size(); i++){
-            std::cout << "Cluster " << i << " : " << classification[i] << std::endl;
+            results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
         };
 
         scoreClusterer();
+        return results;
 
     }
     else{
@@ -262,18 +263,21 @@ void KMeansClusterer::cluster(){
                 }
                 
                 //std::cout << clusters[i].size() << " C SIZE : CEN: "  << centroids[i] << " SP " <<  sumPoints << std::endl;
-                
-
+ 
             };
 
             
         }
         while(!convergence(means, centroids));
 
-        std::cout << "Classification" << std::endl;
+        std::string results;
+        results = "Classification\n";
         for(int i = 0; i < classification.size(); i++){
-            std::cout << "Cluster " << i << " : " << classification[i] << std::endl;
+            results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
         };
+
+        scoreClusterer();
+        return results;
 
         scoreClusterer();
 
@@ -310,6 +314,7 @@ double KMeansClusterer::scoreClusterer(){
     for(int i = 0; i < labels.size(); i++){
             std::cout << "Cluster " << i << " : " << labels[i] << std::endl;
     };
+    std::cout << std::endl;
     return 0;
  
 }
@@ -383,8 +388,17 @@ int KMeansClusterer::getFiles(void){
     return fileCount;
 } 
 
-std::ostream& operator<<(std::ostream& os, const KMeansClusterer& kt){
-
+std::ostream& PLLKIA010::operator<<(std::ostream& os, const KMeansClusterer& kt){ 
+    KMeansClusterer k = kt;
+    k.generate();
+    if(k.output == "std"){
+        os << k.cluster();
+    }
+    else{
+        std::ofstream out(k.output);
+        out << k.cluster();
+        os << "Clustering Results Saved!";
+    }
     return os;
 }
 

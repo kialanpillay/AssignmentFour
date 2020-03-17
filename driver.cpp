@@ -1,11 +1,13 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include "clusterer.h"
 
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-    string output = "";
+    string output = "std";
     string dataset = argv[1];
     int bin = 10;
     int clusters = 10;
@@ -35,10 +37,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    PLLKIA010::KMeansClusterer c(dataset, output, bin, clusters, color);
+    PLLKIA010::KMeansClusterer kt(dataset, output, bin, clusters, color);
     cout << "K-Means Image Clustering" << std::endl;
     cout << "================================================" << std::endl;
-    c.generate();
-    c.cluster();
+    cout << kt;
     return 0;
 }

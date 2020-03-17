@@ -6,10 +6,11 @@
 namespace PLLKIA010
 {
     class KMeansClusterer
-    {
+    {   
+        public:
+            std::string output = "";
         private: 
             std::string dataset;
-            std::string output;
             int bin;
             int k;
             bool color;
@@ -21,7 +22,7 @@ namespace PLLKIA010
             void generate(void);
             void generateFeatures(void);
             void generateRGBFeatures(void);
-            void cluster(void);
+            std::string cluster(void);
             std::vector<std::vector<int>> & getFeatures(void);
             int getFiles(void);
             double calcMeanIntensity(const std::vector<int> &feature);
@@ -33,6 +34,7 @@ namespace PLLKIA010
             bool convergence(const std::vector<double> &means, const std::vector<double> &centroids);
             friend std::ostream& operator<<(std::ostream& os, const KMeansClusterer& kt);
     };
+    std::ostream& operator<<(std::ostream& os, const KMeansClusterer& kt);  
 }
 
 #endif
