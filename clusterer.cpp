@@ -182,10 +182,8 @@ std::string KMeansClusterer::cluster(){
             means = centroids;
             
             for(int i = 0; i < int(features.size()); i+=3){
-                std::cout << calcMeanIntensity(features[i]) << " " << calcMeanIntensity(features[i+1]) <<" " << calcMeanIntensity(features[i+2]) << std::endl;
                 int cluster = assignRGBCluster(features[i],features[i+1],features[i+2], means);
                 int rgbMean = calcRGBMeanIntensity(calcMeanIntensity(features[i]),calcMeanIntensity(features[i+1]),calcMeanIntensity(features[i+2]));
-                std::cout << "RGB " << rgbMean  << std::endl;
                 clusters[cluster].push_back(rgbMean);
                 classification[cluster] += (std::to_string(i/3) + " ");
             };

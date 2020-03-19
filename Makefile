@@ -16,5 +16,5 @@ clean:
 	@rm -f *.o && rm -f clusterer
    
 run:
-	@./clusterer ./Gradient_Numbers_PPMS -k 10 -b 1
+	@./clusterer ./Gradient_Numbers_PPMS -k 10 -b 4 -color
 
