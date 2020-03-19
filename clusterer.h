@@ -30,7 +30,6 @@ namespace PLLKIA010
             int assignCluster(const std::vector<int> &feature, const std::vector<double> &means);
             int assignRGBCluster(const std::vector<int> &rfeature, const std::vector<int> &gfeature, const std::vector<int> &bfeature, const std::vector<double> &means);
             double calcEuclideanDistance(const int featureIntensity, int mean);
-            double scoreClusterer(void);
             bool convergence(const std::vector<double> &means, const std::vector<double> &centroids);
             friend std::ostream& operator<<(std::ostream& os, const KMeansClusterer& kt);
     };

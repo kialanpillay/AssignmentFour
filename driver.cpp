@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    PLLKIA010::KMeansClusterer kt(dataset, output, bin, clusters, color);
+    PLLKIA010::KMeansClusterer kt(output, dataset, bin, clusters, color);
     cout << "K-Means Image Clustering" << std::endl;
     cout << "================================================" << std::endl;
     cout << kt;
