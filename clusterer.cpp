@@ -4,22 +4,13 @@
 #include <string>
 #include <cstdlib>
 #include "clusterer.h"
-#include <filesystem>
 #include <stdio.h>
 #include <math.h>
 #include <algorithm>
 
 using namespace PLLKIA010;
 
-KMeansClusterer::KMeansClusterer(std::string o, std::string d, int b, int n, bool c): output(o), dataset(d), bin(b), k(n), color(c){
-    if(color){
-        features.resize(getFiles()*3);
-    }
-    else{
-        features.resize(getFiles());
-    }
-
-}
+KMeansClusterer::KMeansClusterer(std::string o, std::string d, int b, int n, bool c): output(o), dataset(d), bin(b), k(n), color(c){}
 
 KMeansClusterer::~KMeansClusterer(){
     if(!features.empty())
@@ -47,18 +38,33 @@ void KMeansClusterer::generate(){
 
 void KMeansClusterer::generateFeatures(){
 
-    std::vector<int*> images(getFiles());
+    char buffer[128];
+    std::vector<std::string> files;
+    std::string command = "cd Gradient_Numbers_PPMS && ls";
+    FILE* pipe = popen(command.c_str(), "r");
+
+    while (!feof(pipe)) {
+        if (fgets(buffer, 128, pipe) != NULL){
+            std::string file = buffer;
+            file.erase(std::remove(file.begin(), file.end(), '\n'),
+            file.end());
+            files.push_back(file);
+        }
+            
+    }
+    pclose(pipe);
+
+    std::vector<int*> images(0);
     int width, height, rgb;
     int c = 0;
-    for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
+    for (const auto& file : files) {
         
-        const auto filename = file.path().filename().string();
-        std::ifstream in(dataset+"/"+filename,std::ios::binary);
+        std::ifstream in(dataset+"/"+file,std::ios::binary);
         std::string header;
         in >> header;
         in >> width >> height >> rgb;
 
-        images[c] = new int[height * width];
+        images.push_back(new int[height * width]);
 
         unsigned char pixels[3];  
         for (int j = 0; j < width * height; j++) { 
@@ -73,7 +79,7 @@ void KMeansClusterer::generateFeatures(){
      
     }
     int entries = ceil(double(rgb+1)/double(bin));
-
+    features.resize(images.size());
     for (int i = 0; i < images.size(); i++){
         std::vector<int>hist(0);
         hist.resize(entries);
@@ -97,21 +103,35 @@ void KMeansClusterer::generateFeatures(){
 
 void KMeansClusterer::generateRGBFeatures(){
 
-    std::vector<int*> images(getFiles()*3);
+    char buffer[128];
+    std::vector<std::string> files;
+    std::string command = "cd Gradient_Numbers_PPMS && ls";
+    FILE* pipe = popen(command.c_str(), "r");
+
+    while (!feof(pipe)) {
+        if (fgets(buffer, 128, pipe) != NULL){
+            std::string file = buffer;
+            file.erase(std::remove(file.begin(), file.end(), '\n'),
+            file.end());
+            files.push_back(file);
+        }
+            
+    }
+    pclose(pipe);
+
+    std::vector<int*> images(0);
     int width, height, rgb;
     int c = 0;
-    for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
+    for (const auto& file : files) {
         
-        const auto filename = file.path().filename().string();
-        
-        std::ifstream in(dataset+"/"+filename,std::ios::binary);
+        std::ifstream in(dataset+"/"+file,std::ios::binary);
         std::string header;
         in >> header;
         in >> width >> height >> rgb;
 
-        images[c] = new int[height * width];
-        images[c+1] = new int[height * width];
-        images[c+2] = new int[height * width];
+        images.push_back(new int[height * width]);
+        images.push_back(new int[height * width]);
+        images.push_back(new int[height * width]);
         unsigned char pixels[3];  
         for (int j = 0; j < width * height; j++) { 
             in.read((char *)pixels, 3); 
@@ -126,7 +146,7 @@ void KMeansClusterer::generateRGBFeatures(){
         c+=3;
      
     }
-    
+    features.resize(images.size());
     int entries = ceil(double(rgb+1)/double(bin));
     
     for (int i = 0; i < images.size(); i++){
@@ -146,6 +166,107 @@ void KMeansClusterer::generateRGBFeatures(){
     images.clear();
     
 }
+
+
+std::vector<double> convertRGBtoHSV(const int red, const int green, const int blue){
+
+    std::vector<double> hsv(3);
+    double r = red/255.0;
+    double g = green/255.0;
+    double b = blue/255.0;
+  
+    double cmax = std::max(std::max(r, g), b); 
+    double cmin = std::min(std::min(r, g), b);
+    double diff = cmax-cmin;
+  
+    if (cmax == cmin){ 
+        hsv[0] = 0;
+    }  
+    else if (cmax == r){
+        hsv[0] = int(60 * ((g - b) / diff) + 360) % 360;
+    }  
+    else if (cmax == g){
+        hsv[0] = int(60 * ((b - r) / diff) + 120) % 360;
+    }
+    else if (cmax == b){
+        hsv[0] = int(60 * ((r - g) / diff) + 240) % 360;
+    }
+    if (cmax == 0){ 
+        hsv[1] = 0;
+    }
+    else{ 
+        hsv[1] = (diff / cmax) * 100;
+    }
+    hsv[2] = cmax * 100;
+    return hsv;
+    
+
+}
+
+void KMeansClusterer::generateHSVFeatures(){
+
+    char buffer[128];
+    std::vector<std::string> files;
+    std::string command = "cd Gradient_Numbers_PPMS && ls";
+    FILE* pipe = popen(command.c_str(), "r");
+
+    while (!feof(pipe)) {
+        if (fgets(buffer, 128, pipe) != NULL){
+            std::string file = buffer;
+            file.erase(std::remove(file.begin(), file.end(), '\n'),
+            file.end());
+            files.push_back(file);
+        }
+            
+    }
+    pclose(pipe);
+    std::vector<int*> images(0);
+    int width, height, rgb;
+    int c = 0;
+    for (const auto& file : files) {
+ 
+        std::ifstream in(dataset+"/"+file,std::ios::binary);
+        std::string header;
+        in >> header;
+        in >> width >> height >> rgb;
+
+        images.push_back(new int[height * width]);
+        images.push_back(new int[height * width]);
+        images.push_back(new int[height * width]);
+        unsigned char pixels[3];  
+        for (int j = 0; j < width * height; j++) { 
+            in.read((char *)pixels, 3); 
+            double r = pixels[0]; 
+            double g = pixels[1]; 
+            double b = pixels[2]; 
+            std::vector<double> hsv = convertRGBtoHSV(r,g,b);
+            images[c][j] = hsv[0];
+            images[c+1][j] = hsv[1];
+            images[c+2][j] = hsv[2];
+        } 
+        in.close();
+        c+=3;
+     
+    }
+    features.resize(images.size());
+    for (int i = 0; i < images.size(); i++){
+        std::vector<int>hist(256);
+        for (int j = 0; j < width * height; j++){
+  
+            hist[images[i][j]]++;
+        };
+        features[i] = hist;
+    };
+
+
+    for (int i = 0; i < images.size(); i++){
+        delete [] images[i];
+    };
+    
+    images.clear();
+}
+
+
 
 bool KMeansClusterer::convergence(const std::vector<double> &means, const std::vector<double> &centroids){
 
@@ -168,7 +289,7 @@ std::string KMeansClusterer::cluster(){
         srand((unsigned) time(0));
         for(int i = 0; i < k; i++){
             
-            int r = (rand() % getFiles()*3 + 1)-1;
+            int r = (rand() % features.size() + 1)-1;
             //Forgy Init Method
             means[i] = calcRGBMeanIntensity(calcMeanIntensity(features[r]),calcMeanIntensity(features[r+1]),calcMeanIntensity(features[r+2]));
         };
@@ -226,7 +347,7 @@ std::string KMeansClusterer::cluster(){
         srand((unsigned) time(0));
         for(int i = 0; i < k; i++){
             
-            int r = (rand() % getFiles() + 1) - 1;
+            int r = (rand() % features.size() + 1) - 1;
             means[i] = calcMeanIntensity(features[r]);
         };
         centroids = means;
@@ -296,7 +417,7 @@ int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vect
 
     int cluster = 0;
     double distance = 0;
-    double min = 1000;
+    double min = 10000;
     for(int i = 0; i < int(means.size()); i++){
             distance = calcEuclideanDistance(calcRGBMeanIntensity(calcMeanIntensity(r),calcMeanIntensity(g),calcMeanIntensity(b)), means[i]);
             if(distance <= min){
@@ -316,7 +437,7 @@ double KMeansClusterer::calcMeanIntensity(const std::vector<int>& feature){
 
     int sum = 0;
     for(int i = 0; i < int(feature.size()); i++){
-            sum += feature[i] * i;
+            sum += feature[i] * (i*bin);
     };
     return sum/feature.size();
  
@@ -327,20 +448,6 @@ double KMeansClusterer::calcRGBMeanIntensity(const double r, const double g, con
     return (r+g+b)/3;
 }
 
-
-
-int KMeansClusterer::getFiles(void){
-    
-    int fileCount = 0;
-    
-    for (const auto& file : std::__fs::filesystem::directory_iterator(dataset)) {
-
-        if (file.is_regular_file()) {
-            fileCount++;
-        }
-    }
-    return fileCount;
-} 
 
 std::ostream& PLLKIA010::operator<<(std::ostream& os, const KMeansClusterer& kt){ 
     KMeansClusterer k = kt;

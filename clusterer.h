@@ -22,9 +22,10 @@ namespace PLLKIA010
             void generate(void);
             void generateFeatures(void);
             void generateRGBFeatures(void);
+            void generateHSVFeatures(void);
             std::string cluster(void);
+            std::string clusterHSV(void);
             std::vector<std::vector<int>> & getFeatures(void);
-            int getFiles(void);
             double calcMeanIntensity(const std::vector<int> &feature);
             double calcRGBMeanIntensity(const double r, const double g, const double b);
             int assignCluster(const std::vector<int> &feature, const std::vector<double> &means);
