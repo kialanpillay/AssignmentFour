@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
     int bin = 10;
     int clusters = 10;
     bool color = false;
+    bool hsv = false;
     if(argc < 2){
         cout << "Incorrect number of arguments!" << endl;
         exit(1);
@@ -19,7 +20,7 @@ int main(int argc, char* argv[])
 
     for(int i = 2; i < argc ; i+=2){
         string flag = argv[i];
-        if(flag!="-color"){
+        if(flag!="-color"&&flag!="hsv"){
             string arg = argv[i+1];
             if(flag.find("-o") != std::string::npos){
                 output = arg;
@@ -32,12 +33,18 @@ int main(int argc, char* argv[])
             }
         }
         else{
-            color = true;
+            if(flag=="color"){
+                color = true;
+            }
+            else{
+                hsv = true;
+            }
+            
             break;
         }
     }
 
-    PLLKIA010::KMeansClusterer kt(output, dataset, bin, clusters, color);
+    PLLKIA010::KMeansClusterer kt(dataset, output, bin, clusters, color, hsv);
     cout << "K-Means Image Clustering" << std::endl;
     cout << "================================================" << std::endl;
     cout << kt;
