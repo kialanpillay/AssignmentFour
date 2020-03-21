@@ -43,7 +43,6 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    cout << color << hsv;
 
     PLLKIA010::KMeansClusterer kt(dataset, output, bin, clusters, color, hsv);
     cout << "K-Means Image Clustering" << std::endl;
