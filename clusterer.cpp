@@ -265,7 +265,7 @@ void KMeansClusterer::generateHSVFeatures(){
             features[i] = hist;
         }
         else{
-            std::vector<int>hist(101);
+            std::vector<int>hist(101); //S,V Histogram
             for (int j = 0; j < width * height; j++){
                 hist[images[i][j]]++;
             };
@@ -281,7 +281,7 @@ void KMeansClusterer::generateHSVFeatures(){
     images.clear();
 }
 
-bool KMeansClusterer::convergence2(const std::vector<std::vector<int>> &means, const std::vector<std::vector<int>> &centroids){
+bool KMeansClusterer::convergence(const std::vector<std::vector<int>> &means, const std::vector<std::vector<int>> &centroids){
 
     bool convergence = true;
     
@@ -292,18 +292,11 @@ bool KMeansClusterer::convergence2(const std::vector<std::vector<int>> &means, c
                     convergence = false;
                 }
             };
-
-            /*
-            if(abs(calcMeanIntensity(means[i]) - calcMeanIntensity(centroids[i])) > 0.000001){
-                    convergence = false;
-            }*/
-            
- 
     };
     return convergence;
 }
 
-bool KMeansClusterer::convergence(const std::vector<double> &means, const std::vector<double> &centroids){
+bool KMeansClusterer::simpleConvergence(const std::vector<double> &means, const std::vector<double> &centroids){
 
     bool convergence = true;
     for(int i = 0; i < int(centroids.size()); i++){
@@ -324,9 +317,12 @@ std::string KMeansClusterer::cluster(){
         srand((unsigned) time(0));
         for(int i = 0; i < k; i++){
             
-            int r = (rand() % features.size() + 1)-1;
+            int r = (rand() % (features.size() - 3) + 1)-1;
+            while(r%3!=0){
+                r = (rand() % (features.size() - 3) + 1)-1;
+            }
             //Forgy Init Method
-            means[i] = calcHSVMeanIntensity(calcMeanIntensity(features[r]),calcMeanIntensity(features[r+1]),calcMeanIntensity(features[r+2]));
+            means[i] = HSVMean(featureMean(features[r]),featureMean(features[r+1]),featureMean(features[r+2]));
         };
         std::sort(means.begin(), means.end());
         centroids = means;
@@ -339,7 +335,7 @@ std::string KMeansClusterer::cluster(){
             
             for(int i = 0; i < int(features.size()); i+=3){
                 int cluster = assignHSVCluster(features[i],features[i+1],features[i+2], means);
-                int hsvMean = calcHSVMeanIntensity(calcMeanIntensity(features[i]),calcMeanIntensity(features[i+1]),calcMeanIntensity(features[i+2]));
+                int hsvMean = HSVMean(featureMean(features[i]),featureMean(features[i+1]),featureMean(features[i+2]));
                 clusters[cluster].push_back(hsvMean);
                 classification[cluster] += (std::to_string(i/3) + " ");
             };
@@ -363,7 +359,7 @@ std::string KMeansClusterer::cluster(){
 
             
         }
-        while(!convergence(means, centroids));
+        while(!simpleConvergence(means, centroids));
 
         std::string results;
         results = "Classification\n";
@@ -381,14 +377,12 @@ std::string KMeansClusterer::cluster(){
         srand((unsigned) time(0));
         for(int i = 0; i < k; i++){
             
-            int f = 1;
-            int r = (rand() % 297 + 1)-1;
-            while(f%r!=0){
-                r = (rand() % 297 + 1)-1;
+            int r = (rand() % (features.size() - 3) + 1)-1;
+            while(r%3!=0){
+                r = (rand() % (features.size() - 3) + 1)-1;
             }
-            
             //Forgy Init Method
-            means[i] = calcRGBMeanIntensity(calcMeanIntensity(features[f]),calcMeanIntensity(features[f+1]),calcMeanIntensity(features[f+2]));
+            means[i] = RGBMean(featureMean(features[r]),featureMean(features[r+1]),featureMean(features[r+2]));
         };
         std::sort(means.begin(), means.end());
         centroids = means;
@@ -401,7 +395,7 @@ std::string KMeansClusterer::cluster(){
             
             for(int i = 0; i < int(features.size()); i+=3){
                 int cluster = assignRGBCluster(features[i],features[i+1],features[i+2], means);
-                int rgbMean = calcRGBMeanIntensity(calcMeanIntensity(features[i]),calcMeanIntensity(features[i+1]),calcMeanIntensity(features[i+2]));
+                int rgbMean = RGBMean(featureMean(features[i]),featureMean(features[i+1]),featureMean(features[i+2]));
                 clusters[cluster].push_back(rgbMean);
                 classification[cluster] += (std::to_string(i/3) + " ");
             };
@@ -425,7 +419,7 @@ std::string KMeansClusterer::cluster(){
 
             
         }
-        while(!convergence(means, centroids));
+        while(!simpleConvergence(means, centroids));
 
         std::string results;
         results = "Classification\n";
@@ -457,7 +451,7 @@ std::string KMeansClusterer::cluster(){
             
             for(int i = 0; i < int(features.size()); i++){
 
-                int cluster = ac(features[i], means);
+                int cluster = assignCluster(features[i], means);
                 clusters[cluster].push_back(features[i]);
                 classification[cluster] += (std::to_string(i) + " ");
             };
@@ -493,7 +487,7 @@ std::string KMeansClusterer::cluster(){
 
             
         }
-        while(!convergence2(means, centroids));
+        while(!convergence(means, centroids));
 
         std::string results;
         results = "Classification\n";
@@ -506,13 +500,13 @@ std::string KMeansClusterer::cluster(){
     
 }
 
-int KMeansClusterer::ac(const std::vector<int> &feature, const std::vector<std::vector<int>> &means){
+int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::vector<std::vector<int>> &means){
 
     int cluster = 0;
     double distance = 0;
     double min = 10000;
     for(int i = 0; i < int(means.size()); i++){
-            distance = ed(feature, means[i]);
+            distance = euclideanDistance(feature, means[i]);
             //std::cout << distance << std::endl;
             if(distance <= min){
                 cluster = i;
@@ -523,7 +517,7 @@ int KMeansClusterer::ac(const std::vector<int> &feature, const std::vector<std::
  
 }
 
-double KMeansClusterer::ed(const std::vector<int> &feature, const std::vector<int> &mean){
+double KMeansClusterer::euclideanDistance(const std::vector<int> &feature, const std::vector<int> &mean){
     int ss = 0;
     for(int i = 0; i < int(feature.size()); i++){
             ss += pow(feature[i] - mean[i],2);
@@ -531,32 +525,17 @@ double KMeansClusterer::ed(const std::vector<int> &feature, const std::vector<in
     return sqrt(ss);
 }
 
-int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::vector<double> &means){
-
-    int cluster = 0;
-    double distance = 0;
-    double min = 1000;
-    for(int i = 0; i < int(means.size()); i++){
-            distance = calcEuclideanDistance(calcMeanIntensity(feature), means[i]);
-            if(distance <= min){
-                cluster = i;
-                min = distance;
-            }
-    };
-    return cluster;
- 
-}
 
 int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vector<int> &g, const std::vector<int> &b, const std::vector<double> &means){
 
     int cluster = 0;
-    double distance = 0;
+    double d = 0;
     double min = 10000;
     for(int i = 0; i < int(means.size()); i++){
-            distance = calcEuclideanDistance(calcRGBMeanIntensity(calcMeanIntensity(r),calcMeanIntensity(g),calcMeanIntensity(b)), means[i]);
-            if(distance <= min){
+            d = distance(RGBMean(featureMean(r),featureMean(g),featureMean(b)), means[i]);
+            if(d <= min){
                 cluster = i;
-                min = distance;
+                min = d;
             }
     };
     return cluster;
@@ -566,24 +545,24 @@ int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vect
 int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vector<int> &s, const std::vector<int> &v, const std::vector<double> &means){
 
     int cluster = 0;
-    double distance = 0;
+    double d = 0;
     double min = 10000;
     for(int i = 0; i < int(means.size()); i++){
-            distance = calcEuclideanDistance(calcRGBMeanIntensity(calcMeanIntensity(h),calcMeanIntensity(s),calcMeanIntensity(v)), means[i]);
-            if(distance <= min){
+            d = distance(HSVMean(featureMean(h),featureMean(s),featureMean(v)), means[i]);
+            if(d <= min){
                 cluster = i;
-                min = distance;
+                min = d;
             }
     };
     return cluster;
  
 }
 
-double KMeansClusterer::calcEuclideanDistance(const int featureIntensity, int mean){
-    return abs(featureIntensity - mean);
+double KMeansClusterer::distance(const int featureMean, int mean){
+    return abs(featureMean - mean);
 }
 
-double KMeansClusterer::calcMeanIntensity(const std::vector<int>& feature){
+double KMeansClusterer::featureMean(const std::vector<int>& feature){
 
     int sum = 0;
     for(int i = 0; i < int(feature.size()); i++){
@@ -595,11 +574,11 @@ double KMeansClusterer::calcMeanIntensity(const std::vector<int>& feature){
 
 
 
-double KMeansClusterer::calcRGBMeanIntensity(const double r, const double g, const double b){
+double KMeansClusterer::RGBMean(const double r, const double g, const double b){
     return (r+g+b)/3;
 }
 
-double KMeansClusterer::calcHSVMeanIntensity(const double h, const double s, const double v){
+double KMeansClusterer::HSVMean(const double h, const double s, const double v){
     return (h+s+v)/3;
 }
 
