@@ -45,10 +45,8 @@ void KMeansClusterer::generate(){
 void KMeansClusterer::generateFeatures(){
 
     char buffer[128];
-    std::vector<std::string> files;
     std::string command = "cd " + dataset + " && ls";
     FILE* pipe = popen(command.c_str(), "r");
-
     while (!feof(pipe)) {
         if (fgets(buffer, 128, pipe) != NULL){
             std::string file = buffer;
@@ -63,6 +61,10 @@ void KMeansClusterer::generateFeatures(){
     std::vector<int*> images(0);
     int width, height, rgb;
     int c = 0;
+    if(files.size()==0){
+        std::cout << "No images to cluster!";
+        exit(1);
+    }
     for (const auto& file : files) {
         
         std::ifstream in(dataset+"/"+file,std::ios::binary);
@@ -109,10 +111,8 @@ void KMeansClusterer::generateFeatures(){
 void KMeansClusterer::generateRGBFeatures(){
 
     char buffer[128];
-    std::vector<std::string> files;
     std::string command = "cd " + dataset + " && ls";
     FILE* pipe = popen(command.c_str(), "r");
-
     while (!feof(pipe)) {
         if (fgets(buffer, 128, pipe) != NULL){
             std::string file = buffer;
@@ -123,7 +123,10 @@ void KMeansClusterer::generateRGBFeatures(){
             
     }
     pclose(pipe);
-
+    if(files.size()==0){
+        std::cout << "No images to cluster!";
+        exit(1);
+    }
     std::vector<int*> images(0);
     int width, height, rgb;
     int c = 0;
@@ -211,10 +214,8 @@ std::vector<double> convertRGBtoHSV(const int red, const int green, const int bl
 void KMeansClusterer::generateHSVFeatures(){
 
     char buffer[128];
-    std::vector<std::string> files;
     std::string command = "cd " + dataset + " && ls";
     FILE* pipe = popen(command.c_str(), "r");
-
     while (!feof(pipe)) {
         if (fgets(buffer, 128, pipe) != NULL){
             std::string file = buffer;
@@ -228,6 +229,10 @@ void KMeansClusterer::generateHSVFeatures(){
     std::vector<int*> images(0);
     int width, height, rgb;
     int c = 0;
+    if(files.size()==0){
+        std::cout << "No images to cluster!";
+        exit(1);
+    }
     for (const auto& file : files) {
  
         std::ifstream in(dataset+"/"+file,std::ios::binary);
@@ -337,7 +342,7 @@ std::string KMeansClusterer::cluster(){
                 int cluster = assignHSVCluster(features[i],features[i+1],features[i+2], means);
                 int hsvMean = HSVMean(featureMean(features[i]),featureMean(features[i+1]),featureMean(features[i+2]));
                 clusters[cluster].push_back(hsvMean);
-                classification[cluster] += (std::to_string(i/3) + " ");
+                classification[cluster] += (files[i/3] + " ");
             };
             
             for(int i = 0; i < int(centroids.size()); i++){
@@ -397,7 +402,7 @@ std::string KMeansClusterer::cluster(){
                 int cluster = assignRGBCluster(features[i],features[i+1],features[i+2], means);
                 int rgbMean = RGBMean(featureMean(features[i]),featureMean(features[i+1]),featureMean(features[i+2]));
                 clusters[cluster].push_back(rgbMean);
-                classification[cluster] += (std::to_string(i/3) + " ");
+                classification[cluster] += (files[i/3] + " ");
             };
             
             for(int i = 0; i < int(centroids.size()); i++){
@@ -453,7 +458,7 @@ std::string KMeansClusterer::cluster(){
 
                 int cluster = assignCluster(features[i], means);
                 clusters[cluster].push_back(features[i]);
-                classification[cluster] += (std::to_string(i) + " ");
+                classification[cluster] += (files[i] + " ");
             };
             
             for(int i = 0; i < int(centroids.size()); i++){
