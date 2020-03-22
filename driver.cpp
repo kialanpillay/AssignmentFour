@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 
     for(int i = 2; i < argc ; i+=2){
         string flag = argv[i];
-        if(flag!="-color"&&flag!="hsv"){
+        if(flag!="-color"&&flag!="-hsv"){
             string arg = argv[i+1];
             if(flag.find("-o") != std::string::npos){
                 output = arg;

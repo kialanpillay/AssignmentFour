@@ -14,6 +14,7 @@ namespace PLLKIA010
             int k;
             bool color;
             bool hsv;
+            int iterations;
             std::vector<std::vector<int>> features;
             std::vector<std::string> files;
             std::vector<std::string> classification;
@@ -32,10 +33,10 @@ namespace PLLKIA010
             double HSVMean(const double h, const double s, const double v);
             int assignCluster(const std::vector<int> &feature, const std::vector<std::vector<int>> &means);
             int assignRGBCluster(const std::vector<int> &rfeature, const std::vector<int> &gfeature, const std::vector<int> &bfeature, const std::vector<double> &means);
-            int assignHSVCluster(const std::vector<int> &hfeature, const std::vector<int> &sfeature, const std::vector<int> &vfeature, const std::vector<double> &means);
+            int assignHSVCluster(const std::vector<int> &hfeature, const std::vector<int> &sfeature, const std::vector<int> &vfeature, const std::vector<std::vector<int>> &means);
             double distance(const int featureMean, int mean);
             double euclideanDistance(const std::vector<int> &feature, const std::vector<int> &mean);
-            double similarity(const std::vector<int> &hfeature, const std::vector<int> &sfeature, const std::vector<int> &vfeature, const std::vector<double> &means);
+            double similarity(const std::vector<std::vector<int>> feature, const std::vector<std::vector<int>> mean);
             bool simpleConvergence(const std::vector<double> &means, const std::vector<double> &centroids);
             bool convergence(const std::vector<std::vector<int>> &means, const std::vector<std::vector<int>> &centroids);
             friend std::ostream& operator<<(std::ostream& os, const KMeansClusterer& kt);

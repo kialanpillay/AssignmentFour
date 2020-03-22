@@ -298,6 +298,10 @@ bool KMeansClusterer::convergence(const std::vector<std::vector<int>> &means, co
                 }
             };
     };
+    iterations++;
+    if(iterations==100){
+        convergence = true;
+    }
     return convergence;
 }
 
@@ -315,21 +319,23 @@ bool KMeansClusterer::simpleConvergence(const std::vector<double> &means, const 
 std::string KMeansClusterer::cluster(){
 
     if(hsv){
-        std::vector<double>means(k); 
-        std::vector<double>centroids(k); //updated means
-        std::vector<std::vector<double>>clusters(k); 
+        std::vector<std::vector<int>>means(k*3); 
+        std::vector<std::vector<int>>centroids(k*3); //updated means
+        std::vector<std::vector<std::vector<int>>>clusters; 
         classification.resize(k);
         srand((unsigned) time(0));
-        for(int i = 0; i < k; i++){
+        for(int i = 0; i < k*3; i+=3){
             
             int r = (rand() % (features.size() - 3) + 1)-1;
             while(r%3!=0){
                 r = (rand() % (features.size() - 3) + 1)-1;
             }
             //Forgy Init Method
-            means[i] = HSVMean(featureMean(features[r]),featureMean(features[r+1]),featureMean(features[r+2]));
+            means[i] = features[r];
+            means[i+1] = features[r+1];
+            means[i+2] = features[r+2];
         };
-        std::sort(means.begin(), means.end());
+        //std::cout << clusters[0].size();
         centroids = means;
         do{
             classification.clear();
@@ -340,31 +346,64 @@ std::string KMeansClusterer::cluster(){
             
             for(int i = 0; i < int(features.size()); i+=3){
                 int cluster = assignHSVCluster(features[i],features[i+1],features[i+2], means);
-                int hsvMean = HSVMean(featureMean(features[i]),featureMean(features[i+1]),featureMean(features[i+2]));
-                clusters[cluster].push_back(hsvMean);
+                clusters[cluster].push_back(features[i]);
+                clusters[cluster].push_back(features[i+1]);
+                clusters[cluster].push_back(features[i+2]);
                 classification[cluster] += (files[i/3] + " ");
             };
             
-            for(int i = 0; i < int(centroids.size()); i++){
-
-
-                double sumPoints = 0;
-                for(int k = 0; k < int(clusters[i].size()); k++){
-                    sumPoints += clusters[i][k];
+            for(int i = 0; i < int(centroids.size()); i+=3){
+                if(clusters[i/3].size() == 0){
+                    for(int j = 0; j < centroids[i].size(); j++){
+                    
+                        centroids[i][j] = 0;
             
-                };
-                if(int(clusters[i].size()) == 0){
-                    centroids[i] = 0;
-                }
-                else{
-                    centroids[i] = sumPoints/double(clusters[i].size());
-                }
+                    };
+                    for(int j = 0; j < centroids[i+1].size(); j++){
+                
+                        centroids[i+1][j] = 0; //S Centroid Feature
+                        centroids[i+2][j] = 0; //V Centroid Feautre
             
+                    };
+                }
+                else{ 
+                    for(int j = 0; j < clusters[i/3][0].size(); j++){
+                        double sumPoints = 0;
+                        for(int k = 0; k < clusters[i/3].size(); k+=3){
+                        
+                            sumPoints += clusters[i/3][k][j];
+                
+                        };
+                        centroids[i][j] = sumPoints/(double(clusters[i/3].size()/3));
+                    };
+                    for(int j = 0; j < clusters[i/3][1].size(); j++){
+                        double sumPoints = 0;
+                        for(int k = 1; k < clusters[i/3].size(); k+=3){
+                        
+                            sumPoints += clusters[i/3][k][j];
+                
+                        };
+                        centroids[i+1][j] = sumPoints/(double(clusters[i/3].size()/3));
+
+                    };
+                    for(int j = 0; j < clusters[i/3][2].size(); j++){
+                        double sumPoints = 0;
+                        for(int k = 2; k < clusters[i/3].size(); k+=3){
+                        
+                            sumPoints += clusters[i/3][k][j];
+                
+                        };
+                        centroids[i+2][j] = sumPoints/(double(clusters[i/3].size()/3));
+
+                    };
+
+                }
+                
             };
 
             
         }
-        while(!simpleConvergence(means, centroids));
+        while(!convergence(means, centroids));
 
         std::string results;
         results = "Classification\n";
@@ -389,7 +428,7 @@ std::string KMeansClusterer::cluster(){
             //Forgy Init Method
             means[i] = RGBMean(featureMean(features[r]),featureMean(features[r+1]),featureMean(features[r+2]));
         };
-        std::sort(means.begin(), means.end());
+        //std::sort(means.begin(), means.end());
         centroids = means;
         do{
             classification.clear();
@@ -547,20 +586,33 @@ int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vect
  
 }
 
-int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vector<int> &s, const std::vector<int> &v, const std::vector<double> &means){
+int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vector<int> &s, const std::vector<int> &v, const std::vector<std::vector<int>> &means){
 
     int cluster = 0;
-    double d = 0;
-    double min = 10000;
-    for(int i = 0; i < int(means.size()); i++){
-            d = distance(HSVMean(featureMean(h),featureMean(s),featureMean(v)), means[i]);
-            if(d <= min){
+    double min = 1;
+    for(int i = 0; i < int(means.size()); i+=3){
+            std::vector<std::vector<int>> feature = {h,s,v};
+            std::vector<std::vector<int>>  mean = {means[i], means[i+1], means[i+2]};
+            double s = similarity(feature, mean);
+            if(s <= min){
                 cluster = i;
-                min = d;
+                min = s;
             }
     };
-    return cluster;
+    return cluster/3;
  
+}
+
+double KMeansClusterer::similarity(const std::vector<std::vector<int>> feature, const std::vector<std::vector<int>> mean){
+    double exp = (featureMean(feature[0])-featureMean(mean[0]) * ((2 * 3.14)/256));
+    double H = (1 - pow(cos(exp),2))/2;
+
+    double S = featureMean(feature[1])-featureMean(mean[1])/256;
+
+    double V = featureMean(feature[2])-featureMean(mean[2])/256;
+
+    double similarity = 1/(1 + 0.25*H + 0.05*S + 0*V);
+    return similarity;
 }
 
 double KMeansClusterer::distance(const int featureMean, int mean){
