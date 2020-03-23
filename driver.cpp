@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         }
     }
     if(0 > clusters || bin > 256 || bin < 1){
-        cout << "Invalid arguments supplied. numClusters in [1, Inf] and binSize in [1,256]" << endl;
+        cout << "Invalid arguments supplied. numClusters > 1 and binSize in [1,256]" << endl;
         exit(1);
     }
 
