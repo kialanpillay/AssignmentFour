@@ -26,11 +26,9 @@ namespace PLLKIA010
             void generateRGBFeatures(void);
             void generateHSVFeatures(void);
             std::string cluster(void);
-            std::string clusterHSV(void);
             std::vector<std::vector<int>> & getFeatures(void);
             double featureMean(const std::vector<int> &feature);
             double RGBMean(const double r, const double g, const double b);
-            double HSVMean(const double h, const double s, const double v);
             int assignCluster(const std::vector<int> &feature, const std::vector<std::vector<int>> &means);
             int assignRGBCluster(const std::vector<int> &rfeature, const std::vector<int> &gfeature, const std::vector<int> &bfeature, const std::vector<double> &means);
             int assignHSVCluster(const std::vector<int> &hfeature, const std::vector<int> &sfeature, const std::vector<int> &vfeature, const std::vector<std::vector<int>> &means);

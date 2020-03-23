@@ -15,7 +15,7 @@ KMeansClusterer::KMeansClusterer(std::string d, std::string o, int b, int n, boo
 KMeansClusterer::~KMeansClusterer(){
     if(!features.empty())
     {
-        for (int i = 0; i < features.size(); i++){
+        for (int i = 0; i < int(features.size()); i++){
             features[i].clear();
         };
 
@@ -90,7 +90,7 @@ void KMeansClusterer::generateFeatures(){
     }
     int entries = ceil(double(rgb+1)/double(bin));
     features.resize(images.size());
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         std::vector<int>hist(0);
         hist.resize(entries);
 
@@ -102,7 +102,7 @@ void KMeansClusterer::generateFeatures(){
         features[i] = std::move(hist);
         
     };
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         delete [] images[i];
     };
     
@@ -159,7 +159,7 @@ void KMeansClusterer::generateRGBFeatures(){
     features.resize(images.size());
     int entries = ceil(double(rgb+1)/double(bin));
     
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         std::vector<int>hist(entries);
         for (int j = 0; j < width * height; j++){
             int b = floor(images[i][j]/bin);   
@@ -169,7 +169,7 @@ void KMeansClusterer::generateRGBFeatures(){
     };
 
 
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         delete [] images[i];
     };
     
@@ -262,7 +262,7 @@ void KMeansClusterer::generateHSVFeatures(){
     }
     
     features.resize(images.size());
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         if(i%3==0){
             std::vector<int>hist(361); //Hue Histogram
             for (int j = 0; j < width * height; j++){
@@ -281,7 +281,7 @@ void KMeansClusterer::generateHSVFeatures(){
     };
 
 
-    for (int i = 0; i < images.size(); i++){
+    for (int i = 0; i < int(images.size()); i++){
         delete [] images[i];
     };
     
@@ -301,7 +301,7 @@ bool KMeansClusterer::convergence(const std::vector<std::vector<int>> &means, co
             };
     };
     iterations++;
-    if(iterations==100){
+    if(iterations==50){
         convergence = true;
     }
     return convergence;
@@ -356,12 +356,12 @@ std::string KMeansClusterer::cluster(){
             
             for(int i = 0; i < int(centroids.size()); i+=3){
                 if(clusters[i/3].size() == 0){
-                    for(int j = 0; j < centroids[i].size(); j++){
+                    for(int j = 0; j < int(centroids[i].size()); j++){
                     
                         centroids[i][j] = 0;
             
                     };
-                    for(int j = 0; j < centroids[i+1].size(); j++){
+                    for(int j = 0; j < int(centroids[i+1].size()); j++){
                 
                         centroids[i+1][j] = 0; //S Centroid Feature
                         centroids[i+2][j] = 0; //V Centroid Feautre
@@ -369,18 +369,18 @@ std::string KMeansClusterer::cluster(){
                     };
                 }
                 else{ 
-                    for(int j = 0; j < clusters[i/3][0].size(); j++){
+                    for(int j = 0; j < int(clusters[i/3][0].size()); j++){
                         double sumPoints = 0;
-                        for(int k = 0; k < clusters[i/3].size(); k+=3){
+                        for(int k = 0; k < int(clusters[i/3].size()); k+=3){
                         
                             sumPoints += clusters[i/3][k][j];
                 
                         };
                         centroids[i][j] = sumPoints/(double(clusters[i/3].size()/3));
                     };
-                    for(int j = 0; j < clusters[i/3][1].size(); j++){
+                    for(int j = 0; j < int(clusters[i/3][1].size()); j++){
                         double sumPoints = 0;
-                        for(int k = 1; k < clusters[i/3].size(); k+=3){
+                        for(int k = 1; k < int(clusters[i/3].size()); k+=3){
                         
                             sumPoints += clusters[i/3][k][j];
                 
@@ -388,9 +388,9 @@ std::string KMeansClusterer::cluster(){
                         centroids[i+1][j] = sumPoints/(double(clusters[i/3].size()/3));
 
                     };
-                    for(int j = 0; j < clusters[i/3][2].size(); j++){
+                    for(int j = 0; j < int(clusters[i/3][2].size()); j++){
                         double sumPoints = 0;
-                        for(int k = 2; k < clusters[i/3].size(); k+=3){
+                        for(int k = 2; k < int(clusters[i/3].size()); k+=3){
                         
                             sumPoints += clusters[i/3][k][j];
                 
@@ -505,7 +505,7 @@ std::string KMeansClusterer::cluster(){
             for(int i = 0; i < int(centroids.size()); i++){
 
                 if(clusters[i].size() == 0){
-                    for(int j = 0; j < centroids[i].size(); j++){
+                    for(int j = 0; j < int(centroids[i].size()); j++){
                     
                         centroids[i][j] = 0;
             
@@ -514,9 +514,9 @@ std::string KMeansClusterer::cluster(){
                 else{
 
                     
-                    for(int j = 0; j < clusters[i][0].size(); j++){
+                    for(int j = 0; j < int(clusters[i][0].size()); j++){
                         double sumPoints = 0;
-                        for(int k = 0; k < clusters[i].size(); k++){
+                        for(int k = 0; k < int(clusters[i].size()); k++){
                         
                             sumPoints += clusters[i][k][j];
                 
@@ -635,10 +635,6 @@ double KMeansClusterer::featureMean(const std::vector<int>& feature){
 
 double KMeansClusterer::RGBMean(const double r, const double g, const double b){
     return (r+g+b)/3;
-}
-
-double KMeansClusterer::HSVMean(const double h, const double s, const double v){
-    return (h+s+v)/3;
 }
 
 

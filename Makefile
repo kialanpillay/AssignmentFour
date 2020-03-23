@@ -13,7 +13,7 @@ clusterer.o: clusterer.cpp clusterer.h
 
 
 clean:
-	@rm -f *.o && rm -f clusterer
+	@rm -f *.o && rm -f clusterer && rm -f *.txt
    
 run:
 	@./clusterer ./Gradient_Numbers_PPMS -o output.txt -k 10 -b 1 -hsv
