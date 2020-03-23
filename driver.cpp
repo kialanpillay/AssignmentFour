@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 {
     string output = "std";
     string dataset = argv[1];
-    int bin = 10;
+    int bin = 1;
     int clusters = 10;
     bool color = false;
     bool hsv = false;

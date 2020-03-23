@@ -59,4 +59,4 @@ The clustering process is the same as defined above, with each feature triple th
 \\
 The HSV feature triple is also weighted using the same weights as the article, with 0.25 for H, 0.05 for S, and V being excluded. The idea behind this is that humans are more perceptive to hue. 
 \\
-This feature implementation was found not to converge, so the clusterer runs for a set number of iterations (100). The results also indicate that there is no real increase in clustering accuracy.
+This feature implementation was found not to converge, so the clusterer runs for a set number of iterations (100). The results also indicate that there is no real increase in clustering accuracy, with runs often producing poorer clustering results. The computation time is also much longer than using the Greyscale/RGB features.

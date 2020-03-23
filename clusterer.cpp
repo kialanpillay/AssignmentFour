@@ -301,7 +301,7 @@ bool KMeansClusterer::convergence(const std::vector<std::vector<int>> &means, co
             };
     };
     iterations++;
-    if(iterations==50){
+    if(iterations==100){
         convergence = true;
     }
     return convergence;
