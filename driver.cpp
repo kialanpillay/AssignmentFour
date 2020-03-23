@@ -43,6 +43,10 @@ int main(int argc, char* argv[])
             break;
         }
     }
+    if(0 > clusters || bin > 256 || bin < 1){
+        cout << "Invalid arguments supplied. numClusters in [1, Inf] and binSize in [1,256]" << endl;
+        exit(1);
+    }
 
     PLLKIA010::KMeansClusterer kt(dataset, output, bin, clusters, color, hsv);
     cout << "K-Means Image Clustering" << std::endl;

@@ -4,10 +4,10 @@
 The purpose of the Makefile is to automatically compile and link the C++ source files into a binary executable that can be run locally. Run these commands in sequence to interact with the program.
 ```make``` will compile the files into an executable called ```clusterer```
 \\
-```make run``` will run the executable with the default arguments (std::cout, clusters = 10, binSize = 1)\\
+```make run``` will run the executable with the default arguments (Greyscale features, std::cout, clusters = 10, binSize = 1)\\
 This will cluster the provided image files and write the results to standard output.
 \\
-```make clean``` will delete all object files, bin files, header (.hdr) files, and the executable. 
+```make clean``` will delete all object files, text files, and the executable. 
 \\
 This is the format of arguments that can be passed into the program, where n is the number of clusters and b is the size of the histogram feature bin. 
 \\
@@ -17,7 +17,8 @@ To specify the that color (RGB) histogram features should be used, invoke the pr
 ```./clusterer <dataset> [-o output] [-k n] [-bin b] -color```
 \\
 To specify the that HSV features should be used, invoke the program as follows:\\
-```./clusterer <dataset> [-o output] [-k n] [-bin b] -hsv```\\
+```./clusterer <dataset> [-o output] [-k n] -hsv```\\
+Note that bin size cannot be specified for these features.\\
 The implementation of these features will be detailed below. 
 
 ## clusterer.h
