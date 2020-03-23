@@ -9,7 +9,7 @@ namespace PLLKIA010
     {   
         private: 
             std::string dataset;
-            std::string output ;
+            std::string output;
             int bin;
             int k;
             bool color;

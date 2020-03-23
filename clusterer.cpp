@@ -21,6 +21,8 @@ KMeansClusterer::~KMeansClusterer(){
 
         features.clear();
     }
+    classification.clear();
+    files.clear();
 }
 
 std::vector<std::vector<int>> &  KMeansClusterer::getFeatures(){
