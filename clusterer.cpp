@@ -70,10 +70,15 @@ void KMeansClusterer::generateFeatures(){
     for (const auto& file : files) {
         
         std::ifstream in(dataset+"/"+file,std::ios::binary);
-        std::string header;
+        std::string header, line;
         in >> header;
-        in >> width >> height >> rgb;
-
+        in >> line;
+        while(line.find("#")!=std::string::npos){
+            in >> line;
+        }
+        width = std::stoi(line);
+        in >> height >> rgb;
+        
         images.push_back(new int[height * width]);
 
         unsigned char pixels[3];  
