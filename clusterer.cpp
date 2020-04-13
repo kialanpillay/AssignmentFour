@@ -44,6 +44,12 @@ void KMeansClusterer::generate(){
     
 }
 
+int countWordsInString(std::string const& str)
+{
+    std::stringstream stream(str);
+    return std::distance(std::istream_iterator<std::string>(stream), std::istream_iterator<std::string>());
+}
+
 void KMeansClusterer::generateFeatures(){
 
     char buffer[128];
@@ -68,19 +74,27 @@ void KMeansClusterer::generateFeatures(){
         exit(1);
     }
     for (const auto& file : files) {
+
+        std::ifstream strip(dataset+"/"+file);
+        std::string header, line;
+        getline(strip, header);
+        getline(strip, line);
+        int comments = 0;
+        while(line.find("#")!=std::string::npos){
+            comments += countWordsInString(line);
+            getline(strip,line);
+        }
+        strip.close();
         
         std::ifstream in(dataset+"/"+file,std::ios::binary);
-        std::string header, line;
         in >> header;
-        in >> line;
-        while(line.find("#")!=std::string::npos){
+        for(int i = 0; i < comments; i++){
             in >> line;
         }
-        width = std::stoi(line);
-        in >> height >> rgb;
-        
-        images.push_back(new int[height * width]);
+        in >> width >> height >> rgb;
 
+        images.push_back(new int[height * width]);
+        
         unsigned char pixels[3];  
         for (int j = 0; j < width * height; j++) { 
             in.read((char *)pixels, 3); 
@@ -139,15 +153,23 @@ void KMeansClusterer::generateRGBFeatures(){
     int c = 0;
     for (const auto& file : files) {
         
-        std::ifstream in(dataset+"/"+file,std::ios::binary);
+        std::ifstream strip(dataset+"/"+file);
         std::string header, line;
-        in >> header;
-        in >> line;
+        getline(strip, header);
+        getline(strip, line);
+        int comments = 0;
         while(line.find("#")!=std::string::npos){
+            comments += countWordsInString(line);
+            getline(strip,line);
+        }
+        strip.close();
+        
+        std::ifstream in(dataset+"/"+file,std::ios::binary);
+        in >> header;
+        for(int i = 0; i < comments; i++){
             in >> line;
         }
-        width = std::stoi(line);
-        in >> height >> rgb;
+        in >> width >> height >> rgb;
 
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
@@ -247,15 +269,23 @@ void KMeansClusterer::generateHSVFeatures(){
     }
     for (const auto& file : files) {
  
-        std::ifstream in(dataset+"/"+file,std::ios::binary);
+        std::ifstream strip(dataset+"/"+file);
         std::string header, line;
-        in >> header;
-        in >> line;
+        getline(strip, header);
+        getline(strip, line);
+        int comments = 0;
         while(line.find("#")!=std::string::npos){
+            comments += countWordsInString(line);
+            getline(strip,line);
+        }
+        strip.close();
+        
+        std::ifstream in(dataset+"/"+file,std::ios::binary);
+        in >> header;
+        for(int i = 0; i < comments; i++){
             in >> line;
         }
-        width = std::stoi(line);
-        in >> height >> rgb;
+        in >> width >> height >> rgb;
 
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
