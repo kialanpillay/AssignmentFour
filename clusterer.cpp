@@ -170,7 +170,7 @@ void KMeansClusterer::generateRGBFeatures(){
             in >> line;
         }
         in >> width >> height >> rgb;
-
+        in.get(); 
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
@@ -286,7 +286,7 @@ void KMeansClusterer::generateHSVFeatures(){
             in >> line;
         }
         in >> width >> height >> rgb;
-
+        in.get(); 
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
         images.push_back(new int[height * width]);
