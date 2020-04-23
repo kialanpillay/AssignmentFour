@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <algorithm>
+#include <iterator>
 
 using namespace PLLKIA010;
 
@@ -74,7 +75,6 @@ void KMeansClusterer::generateFeatures(){
         exit(1);
     }
     for (const auto& file : files) {
-
         std::ifstream strip(dataset+"/"+file);
         std::string header, line;
         getline(strip, header);
@@ -94,8 +94,9 @@ void KMeansClusterer::generateFeatures(){
         in >> width >> height >> rgb;
 
         images.push_back(new int[height * width]);
-        
-        unsigned char pixels[3];  
+        unsigned char pixels[3];
+
+        in.get();  
         for (int j = 0; j < width * height; j++) { 
             in.read((char *)pixels, 3); 
             float r = pixels[0]; 
@@ -115,7 +116,6 @@ void KMeansClusterer::generateFeatures(){
 
         for (int j = 0; j < width * height; j++){
             int b = floor(images[i][j]/bin); 
-
             hist[b]++;
         };
         features[i] = std::move(hist);
