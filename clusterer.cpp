@@ -26,9 +26,6 @@ KMeansClusterer::~KMeansClusterer(){
     files.clear();
 }
 
-std::vector<std::vector<int>> &  KMeansClusterer::getFeatures(){
-    return features;
-}
 
 void KMeansClusterer::generate(){
     if(hsv){
@@ -352,7 +349,7 @@ bool KMeansClusterer::convergence(const std::vector<std::vector<int>> &means, co
     return convergence;
 }
 
-bool KMeansClusterer::simpleConvergence(const std::vector<double> &means, const std::vector<double> &centroids){
+bool KMeansClusterer::simpleConvergence(const std::vector<double> &means, const std::vector<double> &centroids) const{
 
     bool convergence = true;
     for(int i = 0; i < int(centroids.size()); i++){
@@ -363,7 +360,7 @@ bool KMeansClusterer::simpleConvergence(const std::vector<double> &means, const 
     return convergence;
 }
 
-std::string KMeansClusterer::cluster(){
+void KMeansClusterer::cluster(){
 
     if(hsv){
         std::vector<std::vector<int>>means(k*3); 
@@ -451,14 +448,6 @@ std::string KMeansClusterer::cluster(){
             
         }
         while(!convergence(means, centroids));
-
-        std::string results;
-        results = "Classification\n";
-        for(int i = 0; i < int(classification.size()); i++){
-            results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
-        };
-
-        return results;
     }
     else if(color){
         std::vector<double>means(k); 
@@ -511,15 +500,6 @@ std::string KMeansClusterer::cluster(){
             
         }
         while(!simpleConvergence(means, centroids));
-
-        std::string results;
-        results = "Classification\n";
-        for(int i = 0; i < int(classification.size()); i++){
-            results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
-        };
-
-        return results;
-
     }
     else{
         std::vector<std::vector<int>>means(k); 
@@ -579,26 +559,27 @@ std::string KMeansClusterer::cluster(){
             
         }
         while(!convergence(means, centroids));
-
-        std::string results;
-        results = "Classification\n";
-        for(int i = 0; i < int(classification.size()); i++){
-            results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
-        };
-        return results;
-
     }
     
 }
 
-int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::vector<std::vector<int>> &means){
+std::string KMeansClusterer::results() const {
+
+    std::string results;
+    results = "Classification\n";
+    for(int i = 0; i < int(classification.size()); i++){
+        results += "Cluster " + std::to_string(i) + " : " + classification[i] + "\n";
+    };
+    return results;
+}
+
+int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::vector<std::vector<int>> &means) const{
 
     int cluster = 0;
     double distance = 0;
     double min = 10000;
     for(int i = 0; i < int(means.size()); i++){
             distance = euclideanDistance(feature, means[i]);
-            //std::cout << distance << std::endl;
             if(distance <= min){
                 cluster = i;
                 min = distance;
@@ -608,7 +589,7 @@ int KMeansClusterer::assignCluster(const std::vector<int> &feature, const std::v
  
 }
 
-double KMeansClusterer::euclideanDistance(const std::vector<int> &feature, const std::vector<int> &mean){
+double KMeansClusterer::euclideanDistance(const std::vector<int> &feature, const std::vector<int> &mean) const{
     int ss = 0;
     for(int i = 0; i < int(feature.size()); i++){
             ss += pow(feature[i] - mean[i],2);
@@ -617,7 +598,7 @@ double KMeansClusterer::euclideanDistance(const std::vector<int> &feature, const
 }
 
 
-int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vector<int> &g, const std::vector<int> &b, const std::vector<double> &means){
+int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vector<int> &g, const std::vector<int> &b, const std::vector<double> &means) const{
 
     int cluster = 0;
     double d = 0;
@@ -633,7 +614,7 @@ int KMeansClusterer::assignRGBCluster(const std::vector<int> &r, const std::vect
  
 }
 
-int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vector<int> &s, const std::vector<int> &v, const std::vector<std::vector<int>> &means){
+int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vector<int> &s, const std::vector<int> &v, const std::vector<std::vector<int>> &means) const{
 
     int cluster = 0;
     double min = 1;
@@ -650,7 +631,7 @@ int KMeansClusterer::assignHSVCluster(const std::vector<int> &h, const std::vect
  
 }
 
-double KMeansClusterer::similarity(const std::vector<std::vector<int>> feature, const std::vector<std::vector<int>> mean){
+double KMeansClusterer::similarity(const std::vector<std::vector<int>> feature, const std::vector<std::vector<int>> mean) const{
     double exp = (featureMean(feature[0])-featureMean(mean[0]) * ((2 * 3.14)/256));
     double H = (1 - pow(cos(exp),2))/2;
 
@@ -662,11 +643,11 @@ double KMeansClusterer::similarity(const std::vector<std::vector<int>> feature, 
     return similarity;
 }
 
-double KMeansClusterer::distance(const int featureMean, int mean){
+double KMeansClusterer::distance(const int featureMean, const int mean) const{
     return abs(featureMean - mean);
 }
 
-double KMeansClusterer::featureMean(const std::vector<int>& feature){
+double KMeansClusterer::featureMean(const std::vector<int>& feature) const{
 
     int sum = 0;
     for(int i = 0; i < int(feature.size()); i++){
@@ -678,7 +659,7 @@ double KMeansClusterer::featureMean(const std::vector<int>& feature){
 
 
 
-double KMeansClusterer::RGBMean(const double r, const double g, const double b){
+double KMeansClusterer::RGBMean(const double r, const double g, const double b) const{
     return (r+g+b)/3;
 }
 
@@ -687,11 +668,13 @@ std::ostream& PLLKIA010::operator<<(std::ostream& os, const KMeansClusterer& kt)
     KMeansClusterer k = kt;
     k.generate();
     if(k.output == "std"){
-        os << k.cluster();
+        k.cluster();
+        os << k.results();
     }
     else{
         std::ofstream out(k.output);
-        out << k.cluster();
+        k.cluster();
+        out << k.results();
         os << "Clustering Results Saved!";
     }
     return os;
