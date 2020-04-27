@@ -20,7 +20,7 @@ namespace PLLKIA010
             std::vector<std::string> classification;
         public: 
             KMeansClusterer();
-            KMeansClusterer(const std::string dataset, const std::string output, const int bins, const int clusters, const bool color, const bool hsv);
+            KMeansClusterer(const std::string &dataset, const std::string &output, const int bins, const int clusters, const bool color, const bool hsv);
             ~KMeansClusterer(void);
             void generate(void);
             void generateFeatures(void);
