@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    if(0 > clusters || bin > 256 || bin < 1){
+    if(0 >= clusters || bin > 256 || bin < 1){
         cout << "Invalid arguments supplied. numClusters > 1 and binSize in [1,256]" << endl;
         exit(1);
     }

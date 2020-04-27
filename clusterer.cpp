@@ -13,7 +13,7 @@ using namespace PLLKIA010;
 
 KMeansClusterer::KMeansClusterer(): dataset(""),output("std"), bin(1), k(10), color(false), hsv(false){}
 
-KMeansClusterer::KMeansClusterer(const std::string &d, const std::string &o, const int b, const int n, const bool c, const bool h): dataset(d), output(o), bin(b), k(n), color(c), hsv(h){}
+KMeansClusterer::KMeansClusterer(const std::string d, const std::string o, const int b, const int n, const bool c, const bool h): dataset(d), output(o), bin(b), k(n), color(c), hsv(h){}
 
 KMeansClusterer::~KMeansClusterer(){
     if(!features.empty())
