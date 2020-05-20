@@ -42,16 +42,16 @@ This file is the actual implementation of all the methods declared in the ```clu
 The Constructor and Destructor are responsible for initialising the member variables, and clearing the vectors respectively.
 
 
-generateFeatures: This method iterates through the dataset (directory of files), and reads the image as binary into an unsigned_char array, Each byte triple is extracted and used to compute the greyscale value, or stored as seperate image features (RGB/HSV Features). These images are then processed into histogram features, with each bin containing the frequency of that pixel/range of pixels.
+**generateFeatures**: This method iterates through the dataset (directory of files), and reads the image as binary into an unsigned_char array, Each byte triple is extracted and used to compute the greyscale value, or stored as seperate image features (RGB/HSV Features). These images are then processed into histogram features, with each bin containing the frequency of that pixel/range of pixels.
 
 
-cluster: Regardless on the type of feature, the cluster method functions using the same principle. It implements a naive K-Means algorithm, also known as Lloyd's algorithm. The chosen centroid initialization method is Forgy, which the literature has shown to be more accurate when using Lloyd's algorithm, compared to other methods. Forgy's method involves selecting K random observations from the dataset, and using these as the initial means. For each feature (or set of features that represents the image (RGB/HSV)), the feature is assigned to a cluster, and the classification results are stored. Based on these clusters, the initial means/centroids are recomputed, by summing the observations and dividing by the size of the cluster, and the exisiting centroids become the old centroids. This process iterates until convergence is reached, i.e. centroids in the ith iteration are equal to the centroids in the i-1th iteration. For RGB and HSV features, each mean consits of a feature triple that represents a single observation/image. Each of these features are recomputed to create the updated K means after each iteration.
+**cluster**: Regardless on the type of feature, the cluster method functions using the same principle. It implements a naive K-Means algorithm, also known as Lloyd's algorithm. The chosen centroid initialization method is Forgy, which the literature has shown to be more accurate when using Lloyd's algorithm, compared to other methods. Forgy's method involves selecting K random observations from the dataset, and using these as the initial means. For each feature (or set of features that represents the image (RGB/HSV)), the feature is assigned to a cluster, and the classification results are stored. Based on these clusters, the initial means/centroids are recomputed, by summing the observations and dividing by the size of the cluster, and the exisiting centroids become the old centroids. This process iterates until convergence is reached, i.e. centroids in the ith iteration are equal to the centroids in the i-1th iteration. For RGB and HSV features, each mean consits of a feature triple that represents a single observation/image. Each of these features are recomputed to create the updated K means after each iteration.
 
 
-assignCluster: This method compares the distance measure of a feature to each of the means, to determine the best cluster for the observation to be assigned to.
+**assignCluster**: This method compares the distance measure of a feature to each of the means, to determine the best cluster for the observation to be assigned to.
 
 
-euclideanDistance: This helper functions calculates the euclidean distance between two sets of points (two observations).
+**euclideanDistance**: This helper functions calculates the euclidean distance between two sets of points (two observations).
 
 
 ## driver.cpp
